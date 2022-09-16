@@ -1,5 +1,6 @@
 package com.example.junitproject.domain;
 
+import com.example.junitproject.web.dto.BookRespDto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,4 +37,11 @@ public class Book {
         this.author = author;
     }
 
+    public BookRespDto toDto() {
+        return BookRespDto.builder()
+                .id(this.id)
+                .title(this.title)
+                .author(this.author)
+                .build();
+    }
 }
