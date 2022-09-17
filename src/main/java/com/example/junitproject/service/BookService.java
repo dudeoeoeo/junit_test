@@ -2,8 +2,8 @@ package com.example.junitproject.service;
 
 import com.example.junitproject.domain.Book;
 import com.example.junitproject.domain.BookRepository;
-import com.example.junitproject.web.dto.BookRespDto;
-import com.example.junitproject.web.dto.BookSaveReqDto;
+import com.example.junitproject.web.dto.response.BookRespDto;
+import com.example.junitproject.web.dto.request.BookSaveReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,7 +45,7 @@ public class BookService {
         return book.get().toDto();
     }
 
-    public void updateBook(Long bookId, BookSaveReqDto dto) {
+    public BookRespDto updateBook(Long bookId, BookSaveReqDto dto) {
         final Optional<Book> book = bookRepository.findById(bookId);
 
         if (book.isEmpty())
@@ -53,6 +53,8 @@ public class BookService {
 
         book.get().updateAuthor(dto.getAuthor());
         book.get().updateTitle(dto.getTitle());
+
+        return book.get().toDto();
     }
 
     public void deleteBook(Long bookId) {
