@@ -2,6 +2,7 @@ package com.example.junitproject.service;
 
 import com.example.junitproject.domain.Book;
 import com.example.junitproject.domain.BookRepository;
+import com.example.junitproject.web.dto.response.BookListRespDto;
 import com.example.junitproject.web.dto.response.BookRespDto;
 import com.example.junitproject.web.dto.request.BookSaveReqDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,11 +30,15 @@ public class BookService {
         return save.toDto();
     }
 
-    public List<BookRespDto> getBookList() {
-        return bookRepository.findAll()
+    public BookListRespDto getBookList() {
+        final List<BookRespDto> bookRespDtoList = bookRepository.findAll()
                 .stream()
                 .map(Book::toDto)
                 .collect(Collectors.toList());
+
+        BookListRespDto bookListRespDto = BookListRespDto.builder().bookList(bookRespDtoList).build();
+
+        return bookListRespDto;
     }
 
     public BookRespDto getBook(Long bookId) {
