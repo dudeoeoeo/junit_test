@@ -2,6 +2,7 @@ package com.example.junitproject.service;
 
 import com.example.junitproject.domain.Book;
 import com.example.junitproject.domain.BookRepository;
+import com.example.junitproject.web.dto.response.BookListRespDto;
 import com.example.junitproject.web.dto.response.BookRespDto;
 import com.example.junitproject.web.dto.request.BookSaveReqDto;
 import org.junit.jupiter.api.Test;
@@ -57,11 +58,11 @@ public class BookServiceTest {
         when(bookRepository.findAll()).thenReturn(books);
 
         // when
-        final List<BookRespDto> bookList = bookService.getBookList();
+        final BookListRespDto bookList = bookService.getBookList();
 
         // then
-        assertThat(bookList.get(0).getTitle()).isEqualTo("junit");
-        assertThat(bookList.get(1).getAuthor()).isEqualTo("boot");
+        assertThat(bookList.getItems().get(0).getTitle()).isEqualTo("junit");
+        assertThat(bookList.getItems().get(1).getAuthor()).isEqualTo("boot");
     }
 
     @Test
