@@ -1,5 +1,7 @@
 package com.example.junitproject.web;
 
+import com.example.junitproject.domain.Book;
+import com.example.junitproject.domain.BookRepository;
 import com.example.junitproject.service.BookService;
 import com.example.junitproject.web.dto.request.BookSaveReqDto;
 import com.example.junitproject.web.dto.response.BookListRespDto;
@@ -8,11 +10,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
+import org.springframework.test.context.jdbc.Sql;
 
 import java.util.List;
 
@@ -26,6 +30,9 @@ public class BookApiControllerTest {
     private BookService bookService;
 
     @Autowired
+    private BookRepository bookRepository;
+
+    @Autowired
     private TestRestTemplate template;
 
     private static ObjectMapper om;
@@ -36,6 +43,16 @@ public class BookApiControllerTest {
         om = new ObjectMapper();
         headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+    }
+
+    @BeforeEach
+    public void saveDefaultBook() {
+        final Book book = Book.builder()
+                .id(1L)
+                .title("junit")
+                .author("spring")
+                .build();
+        bookRepository.save(book);
     }
 
     @Test
@@ -61,6 +78,7 @@ public class BookApiControllerTest {
         assertThat(author).isEqualTo(reqDto.getAuthor());
     }
 
+    @Sql("classpath:db/tableInit.sql")
     @Test
     public void getBookList() throws Exception {
         // when
@@ -68,10 +86,61 @@ public class BookApiControllerTest {
 
         // then
         DocumentContext dc = JsonPath.parse(response.getBody());
+        int code = dc.read("$.code");
         List<BookRespDto> items = dc.read("$.body.items");
 
-        assertThat(items.size()).isEqualTo(0);
-        assertThat(items.isEmpty()).isTrue();
+        assertThat(code).isEqualTo(1);
+        assertThat(items.size()).isEqualTo(1);
+        assertThat(items.isEmpty()).isFalse();
     }
 
+    @Sql("classpath:db/tableInit.sql")
+    @Test
+    public void getBookOne() throws Exception {
+        // given
+        Integer id = 1;
+
+        // when
+        HttpEntity<String> request = new HttpEntity<>(null, headers);
+        final ResponseEntity<String> response = template.exchange(
+                "/api/v1/book/" + id,
+                HttpMethod.GET,
+                request,
+                String.class);
+
+        // then
+        DocumentContext dc = JsonPath.parse(response.getBody());
+        int code = dc.read("$.code");
+        int bookId = dc.read("$.body.id");
+        String title = dc.read("$.body.title");
+        String author = dc.read("$.body.author");
+
+        assertThat(code).isEqualTo(1);
+        assertThat(bookId).isEqualTo(1);
+        assertThat(title).isEqualTo("junit");
+        assertThat(author).isEqualTo("spring");
+    }
+
+    @Sql("classpath:db/tableInit.sql")
+    @Test
+    public void deleteBook() throws Exception {
+        // given
+        Integer id = 1;
+
+        // when
+        HttpEntity<String> request = new HttpEntity<>(null, headers);
+        final ResponseEntity<String> response = template.exchange(
+                "/api/v1/book/" + id,
+                HttpMethod.DELETE,
+                request,
+                String.class);
+
+        // then
+        DocumentContext dc = JsonPath.parse(response.getBody());
+        int code = dc.read("$.code");
+        final int statusCodeValue = response.getStatusCodeValue();
+
+        assertThat(code).isEqualTo(1);
+        assertThat(statusCodeValue).isEqualTo(200);
+    }
 }
