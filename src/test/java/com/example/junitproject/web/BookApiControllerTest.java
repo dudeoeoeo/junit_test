@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.List;
@@ -23,6 +24,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.*;
 
 // 통합테스트 (C, S, R)
+@ActiveProfiles("dev")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class BookApiControllerTest {
 
@@ -119,6 +121,36 @@ public class BookApiControllerTest {
         assertThat(bookId).isEqualTo(1);
         assertThat(title).isEqualTo("junit");
         assertThat(author).isEqualTo("spring");
+    }
+
+    @Sql("classpath:db/tableInit.sql")
+    @Test
+    public void updateBook() throws Exception {
+        // given
+        Integer id = 1;
+        BookSaveReqDto bookSaveReqDto = new BookSaveReqDto();
+        bookSaveReqDto.setTitle("batch");
+        bookSaveReqDto.setAuthor("baeldung");
+
+        String body = om.writeValueAsString(bookSaveReqDto);
+
+        // when
+        HttpEntity<String> request = new HttpEntity<>(body, headers);
+        final ResponseEntity<String> response = template.exchange(
+                "/api/v1/book/" + id,
+                HttpMethod.PUT,
+                request,
+                String.class);
+
+        // then
+        DocumentContext dc = JsonPath.parse(response.getBody());
+        int code = dc.read("$.code");
+        String title = dc.read("$.body.title");
+        String author = dc.read("$.body.author");
+
+        assertThat(code).isEqualTo(1);
+        assertThat(title).isEqualTo("batch");
+        assertThat(author).isEqualTo("baeldung");
     }
 
     @Sql("classpath:db/tableInit.sql")

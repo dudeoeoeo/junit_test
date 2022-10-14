@@ -46,6 +46,12 @@ public class BookApiController {
         CMRespDto cmRespDto = CMRespDto.builder().code(1).msg("글 목록 가져오기").body(bookList).build();
         return new ResponseEntity<>(cmRespDto, HttpStatus.OK);
     }
+
+    @GetMapping("/books")
+    public BookListRespDto getBooksList() {
+        return bookService.getBookList();
+    }
+
     @GetMapping("/book/{id}")
     public ResponseEntity<?> getBook(@PathVariable Long id) {
         final BookRespDto book = bookService.getBook(id);

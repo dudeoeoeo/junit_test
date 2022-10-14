@@ -26,7 +26,6 @@ spring:
           physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         show-sql: true
         format_sql: true
-
 # Terminal 창에 Jpa log 이쁘게 찍기
   output:
     ansi:
